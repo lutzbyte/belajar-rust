@@ -1,0 +1,35 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+if [ -z "$1" ]; then
+    echo "Penggunaan: run <nama_file>"
+    exit 1
+fi
+
+file="$1"
+
+# Tambahkan .rs jika belum ada
+if [[ "$file" != *.rs ]]; then
+    file="${file}.rs"
+fi
+
+# Periksa file
+if [ ! -f "$file" ]; then
+    echo "Error: File '$file' tidak ditemukan."
+    exit 1
+fi
+
+filename=$(basename "$file" .rs)
+binary="$TMPDIR/${filename}_$$"
+
+# Hapus binary setelah selesai
+trap 'rm -f "$binary"' EXIT INT TERM
+
+# Compile
+if ! rustc "$file" -o "$binary"; then
+    exit 1
+fi
+
+# Jalankan program tanpa output tambahan
+"$binary"
+exit $?
+
